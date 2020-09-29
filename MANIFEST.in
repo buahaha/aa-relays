@@ -1,0 +1,4 @@
+include LICENSE
+include README.md
+recursive-include aarelays *.py
+recursive-include aarelays/templates *
