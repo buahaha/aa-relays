@@ -71,6 +71,7 @@ class Messages(models.Model):
 
     message = models.PositiveBigIntegerField(primary_key=True)
     content = models.CharField(max_length=1000)
+    datetime = models.DateTimeField(auto_now=False, auto_now_add=True)
 
     def __str__(self):
         return '"{}"'.format(self.message_id)
