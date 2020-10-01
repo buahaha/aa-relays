@@ -24,26 +24,26 @@ class Servers(models.Model):
         SLACK = 'Slack', _('Slack')
         XMPP = 'XMPP', _('XMPP')
 
-    server_id = models.PositiveBigIntegerField(primary_key=True)
-    server_name = models.CharField(max_length=100)
-    server_type = models.CharField(max_length=10, default="Discord", choices=Message_Type.choices)
+    server = models.PositiveBigIntegerField(primary_key=True)
+    name = models.CharField(max_length=100)
+    protocol = models.CharField(max_length=10, default="Discord", choices=Message_Type.choices)
 
     class Meta:
         verbose_name = 'Server'
         verbose_name_plural = 'Servers'
 
     def __str__(self):
-        return '{}'.format(self.server_name)
+        return '{}'.format(self.name)
 
 class AccessTokens(models.Model):
     """Access Token"""
 
     token = models.CharField(max_length=256)
-    server_id = models.ForeignKey(Servers, on_delete=models.CASCADE)
+    servers = models.ManyToManyField(Servers)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, blank=True, null=True)
 
     def __str__(self):
-        return '"{}"'.format(self.webhook.name)
+        return '"{}"'.format(self.token)
 
     class Meta:
         verbose_name = 'Access Token'
@@ -53,10 +53,9 @@ class AccessTokens(models.Model):
 class Channels(models.Model):
     """Channel IDs, Names and the Server they belong to"""
 
-    server_id = models.ForeignKey(Servers, on_delete=models.CASCADE)
-
-    channel_id = models.PositiveBigIntegerField(primary_key=True)
-    channel_name = models.CharField(max_length=100)
+    server = models.ForeignKey(Servers, on_delete=models.CASCADE)
+    channel = models.PositiveBigIntegerField(primary_key=True)
+    name = models.CharField(max_length=100)
 
     def __str__(self):
         return '"{}" On "{}"'.format(self.channel_name, self.server_id.server_name)
@@ -68,13 +67,13 @@ class Channels(models.Model):
 class Messages(models.Model):
     """Message Storage"""
 
-    channel_id = models.ForeignKey(Channels, on_delete=models.CASCADE)
+    channel = models.ForeignKey(Channels, on_delete=models.CASCADE)
 
-    message_id = models.PositiveBigIntegerField(primary_key=True)
-    message_content = models.CharField(max_length=1000)
+    message = models.PositiveBigIntegerField(primary_key=True)
+    content = models.CharField(max_length=1000)
 
     def __str__(self):
-        return '"{}"'.format(self.message_content)
+        return '"{}"'.format(self.message_id)
 
     class Meta:
         verbose_name = 'Message'
@@ -91,7 +90,7 @@ class DestinationAADiscordBot(models.Model):
         DIRECT_MESSAGE = 'DM', _('Direct Message')
 
     destination_type = models.CharField(max_length=2, choices=Message_Type.choices, default=Message_Type.CHANNEL_MESSAGE)
-    destination_id = models.ForeignKey(Channels, on_delete=models.CASCADE)
+    destination = models.ForeignKey(Channels, on_delete=models.CASCADE)
     
 class RelayConfigurations(models.Model):
     """In and Out.... Repeat"""
