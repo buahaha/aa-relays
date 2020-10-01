@@ -26,27 +26,23 @@ from asgiref.sync import sync_to_async
 def now():
     return datetime.utcnow().strftime('%B %d %H:%M')
 
-token = AccessTokens.objects.get(id=1).token
+token = AccessTokens.objects.get(id=2).token
 
 client = discord.Client()
+print(f"Intel Bot Started at: {now()}")
 
 @client.event
 async def on_ready():
-    print('Logged in as')
-    print(client.user.name)
-    print(client.user.id)
-    print('------')
+    print(f"Intel Bot on_ready at: {now()}")
+    ## Populate Models on opening the client
     for guild in list(client.guilds):
-        print("".join("-" for _ in range(100)))
         print(f"Server Name: {guild.name}")
         print(f"Server ID: {guild.id}")
-        members = list(guild.members)
-        for m in members:
-            roles = 'None'
-            if m.roles:
-                roles = ', '.join(x.name for x in m.roles)
-            print(f"[*] {m.display_name} aka {m.nick}, {m.id}, {str(m.joined_at)}, "
-                  f"\"{roles}\", {m.status}")
+        Servers.objects.update_or_create(server=guild.id, defaults = {'name': guild.name, 'protocol': "Discord"})
+        for channel in list(guild.channels):
+            print(f"Channel Name: {channel.name}")
+            print(f"Channel ID: {channel.id}")
+            Channels.objects.update_or_create(channel=channel.id, defaults={'server_id': guild.id, 'name': channel.name})
 
 @client.event
 async def on_message(message):
@@ -62,9 +58,10 @@ async def on_message(message):
         f"{message.author}: {joined_content}"
 
     if True == True: #db logging check
-        Servers.objects.update_or_create(server=message.channel.guild.id, name=message.channel.guild.name, protocol="Discord")
-        Channels.objects.update_or_create(name=message.channel.name, channel=message.channel.id, server_id=message.channel.guild.id)
-        Messages.objects.create(message=message.id, content=msg,channel_id=message.channel.id)
+        try:
+            Messages.objects.create(message=message.id, content=msg,channel_id=message.channel.id)
+        except Exception as e:
+            logger.error(e)
 
     if False == True: #webhook framwork idk
         msg = f"EVE Time: {now()}\n" \

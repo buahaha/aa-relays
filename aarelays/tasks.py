@@ -18,16 +18,21 @@ def now():
 def discord_populate_models(token):
     #Populate Server and Channel Models from a Slack Token
     #This is a heavily trimmed down version of the Discord Relay Runner that will populate models and close on completion
-    
+    logger.debug("Beginning Discord_Populate_Models for token {}".format(token))
     client = discord.Client()
-
+    
     @client.event
     async def on_ready():
+        print(f"Intel Bot on_ready at: {now()}")
         ## Populate Models on opening the client
         for guild in list(client.guilds):
-            Server.objects.update_or_create(server_id=guild.id, server_name=guild.name, server_type="Discord")
+            print(f"Server Name: {guild.name}")
+            print(f"Server ID: {guild.id}")
+            Servers.objects.update_or_create(server=guild.id, defaults = {'name': guild.name, 'protocol': "Discord"})
             for channel in list(guild.channels):
-                Channel.objects.update_or_create(server_id=guild.id, channel_name=channel.name, channel_id=channel.id)
+                print(f"Channel Name: {channel.name}")
+                print(f"Channel ID: {channel.id}")
+                Channels.objects.update_or_create(channel=channel.id, defaults={'server_id': guild.id, 'name': channel.name})
 
         await client.close()
 
