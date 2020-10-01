@@ -34,19 +34,27 @@ pip install aa-relays
 
 ### Step Two - Configure
 
-* Add `structures` to INSTALLED_APPS
-* Add the below lines to your `local.py` settings file
+- Add `aarelays` to INSTALLED_APPS
+- Add the below lines to your `local.py` settings file
 
  ```python
 ## Settings for AA-Relays ##
-#none yet
+AARELAYS_SETTING_ONE = False
 ```
 
 ### Step Three - Update Project
 
-* Run migrations `python manage.py migrate`
-* Gather your staticfiles `python manage.py collectstatic`
+- Run migrations `python manage.py migrate`
+- Gather your staticfiles `python manage.py collectstatic`
 
 ## Settings
 
-SETTING_ONE = False
+Name | Description | Default
+-- | -- | --
+AARELAYS_SETTING_ONE | Does Nothing Currently | False
+
+## Perimssions
+
+Name | Purpose | Code
+-- | -- | --
+Can Access This App  | Allow users to submit Access Tokens from the Front-End | `relays.basic_access`
