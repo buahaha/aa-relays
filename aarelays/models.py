@@ -2,10 +2,6 @@ from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from django.contrib.auth.models import Group
-
-from allianceauth.eveonline.models import EveCorporationInfo, EveAllianceInfo
-
 class Relays(models.Model):
     """Meta model for app permissions"""
 
@@ -19,14 +15,14 @@ class Relays(models.Model):
 class Servers(models.Model):
     """Servers and their ID"""
 
-    class Message_Type(models.TextChoices):
+    class Protocol_Choice(models.TextChoices):
         DISCORD = 'Discord', _('Discord')
         SLACK = 'Slack', _('Slack')
         XMPP = 'XMPP', _('XMPP')
 
     server = models.PositiveBigIntegerField(primary_key=True)
     name = models.CharField(max_length=100)
-    protocol = models.CharField(max_length=10, default="Discord", choices=Message_Type.choices)
+    protocol = models.CharField(max_length=10, default="Discord", choices=Protocol_Choice.choices)
 
     class Meta:
         verbose_name = 'Server'
@@ -39,7 +35,7 @@ class AccessTokens(models.Model):
     """Access Token"""
 
     token = models.CharField(max_length=256)
-    servers = models.ManyToManyField(Servers)
+    servers = models.ManyToManyField(Servers, blank=True)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, blank=True, null=True)
 
     def __str__(self):
@@ -58,7 +54,7 @@ class Channels(models.Model):
     name = models.CharField(max_length=100)
 
     def __str__(self):
-        return '"{}" On "{}"'.format(self.channel_name, self.server_id.server_name)
+        return '"{}" On "{}"'.format(self.name, self.server.server_name)
 
     class Meta:
         verbose_name = 'Channel'
@@ -72,9 +68,10 @@ class Messages(models.Model):
     message = models.PositiveBigIntegerField(primary_key=True)
     content = models.CharField(max_length=1000)
     datetime = models.DateTimeField(auto_now=False, auto_now_add=True)
+    author = models.CharField(max_length=50)
 
     def __str__(self):
-        return '"{}"'.format(self.message_id)
+        return '"{}"'.format(self.message)
 
     class Meta:
         verbose_name = 'Message'
@@ -82,21 +79,53 @@ class Messages(models.Model):
 
 class DestinationWebhooks(models.Model):
     """Destinations for Relays"""
-    webhook = models.CharField(max_length=50)
+    webhook = models.CharField(max_length=200)
+    name = models.CharField(max_length=50)
+
+    def __str__(self):
+        return '"{}"'.format(self.name)
+
+    class Meta:
+        verbose_name = 'Destination Webhook'
+        verbose_name_plural = 'Destination Webhooks'
 
 class DestinationAADiscordBot(models.Model):
-    """Destinaton Channels to be passed to AA-Discord Bot DONT set this to hostile channels you potato"""
+    """Destinaton Channels to be passed to AA-Discord Bot DON'T set this to hostile channels you potato"""
     class Message_Type(models.TextChoices):
         CHANNEL_MESSAGE = 'CM', _('Channel Message')
         DIRECT_MESSAGE = 'DM', _('Direct Message')
 
     destination_type = models.CharField(max_length=2, choices=Message_Type.choices, default=Message_Type.CHANNEL_MESSAGE)
     destination = models.ForeignKey(Channels, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return '"{}"'.format(self.destination)
+
+    class Meta:
+        verbose_name = 'Discord Channel Destination'
+        verbose_name_plural = 'Discord Channel Destinations'
     
 class RelayConfigurations(models.Model):
-    """In and Out.... Repeat"""
+    """In and Out...... Repeat"""
+    name = models.CharField(max_length=50)
+    token = models.OneToOneField(AccessTokens,on_delete=models.CASCADE)
+
+    message_mention = models.BooleanField(default=True)
+    message_non_mention = models.BooleanField(default=False)
+    message_regex = models.CharField(max_length=10, default=".^", blank=False, null=False)
+
     source_server = models.ForeignKey(Servers, on_delete=models.CASCADE)
+    source_server_all = models.BooleanField(default=False)
     source_channel = models.ForeignKey(Channels, on_delete=models.CASCADE)
+    source_channel_all = models.BooleanField(default=False)
 
     destination_webhook = models.ForeignKey(DestinationWebhooks, on_delete=models.CASCADE)
     destination_aadiscordbot = models.ForeignKey(DestinationAADiscordBot, on_delete=models.CASCADE)
+    destination_db = models.BooleanField(default=False)
+
+    def __str__(self):
+        return '"{}"'.format(self.name)
+
+    class Meta:
+        verbose_name = 'Relay Configuration'
+        verbose_name_plural = 'Relay Configurations'

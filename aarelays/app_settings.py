@@ -1,7 +1,7 @@
 from django.conf import settings
 
-
-# put your app settings here
+def aadiscordbot_active():
+    return 'aa-discordbot' in settings.INSTALLED_APPS
 
 """
 EXAMPLE_SETTING_ONE = getattr(

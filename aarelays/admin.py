@@ -52,3 +52,47 @@ class MessagesAdmin(admin.ModelAdmin):
             return obj.channel_id.server_id
         except Exception as e:
             logger.error(e)
+
+@admin.register(DestinationWebhooks)
+class DestinationWebhooks(admin.ModelAdmin):
+    list_display = ('name','webhook')
+    ordering = ('name',)
+
+    search_fields = ('name',)
+
+
+@admin.register(DestinationAADiscordBot)
+class DestinationAADiscordBot(admin.ModelAdmin):
+    list_display = ('destination','destination_type')
+    ordering = ('destination',)
+
+    search_fields = ('destination',)
+
+@admin.register(RelayConfigurations)
+class RelayConfigurations(admin.ModelAdmin):
+    list_display = ('name','source_channel_name','destination_webhook_name','destination_aadiscordbot')
+    ordering = ('name',)
+
+    search_fields = ('name',)
+
+
+    @staticmethod
+    def server_name(obj):
+        try:
+            return obj.source_server.name
+        except Exception as e:
+            logger.error(e)
+
+    @staticmethod
+    def source_channel_name(obj):
+        try:
+            return obj.source_channel.name
+        except Exception as e:
+            logger.error(e)
+
+    @staticmethod
+    def destination_webhook_name(obj):
+        try:
+            return obj.destination_webhook.name
+        except Exception as e:
+            logger.error(e)

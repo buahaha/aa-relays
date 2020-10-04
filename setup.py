@@ -42,7 +42,7 @@ setup(
     ],
     python_requires='~=3.6',
     install_requires=[
-        "allianceauth>=2.7.0"
+        "allianceauth>=2.8.0a2"
     ],
 
 )
