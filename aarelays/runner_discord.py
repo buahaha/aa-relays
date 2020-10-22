@@ -13,9 +13,17 @@ import django.db
 from django.conf import settings
 import re
 
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument("runnerconfigid")
+args = parser.parse_args()
 
 import logging
 logger = logging.getLogger(__name__)
+logging.basicConfig(level="DEBUG")
+
+from googletrans import Translator
+translator = Translator()
 
 django.setup()
 
@@ -28,17 +36,15 @@ if aadiscordbot_active():
 def now():
     return datetime.utcnow().strftime('%B %d %H:%M')
 
-
-relayconfiguration = RelayConfigurations.objects.get(id=1)
-
+relayconfiguration = RelayConfigurations.objects.get(id=args.runnerconfigid)
 
 client = discord.Client()
 
-print(f"Intel Bot Started at: {now()}")
+print(f"AA Relays config #{args.runnerconfigid} Started at: {now()}")
 
 @client.event
 async def on_ready():
-    print(f"Intel Bot on_ready at: {now()}")
+    print(f"AA Relays config #{args.runnerconfigid} at: {now()}")
     ## Populate Models on opening the client
     for guild in list(client.guilds):
         print(f"Server Name: {guild.name}")
@@ -52,9 +58,9 @@ async def on_ready():
 @client.event
 async def on_message(message):
     logger.debug("Message Event Received")
-    if message.channel.guild.id in relayconfiguration.source_server or relayconfiguration.source_server_all == True:
+    if message.channel.guild.id in relayconfiguration.source_server.all() or relayconfiguration.source_server_all == True:
         logger.debug("Matched Server {}".format(message.channel.guild.id))
-        if message.channel.id in relayconfiguration.source_channel or relayconfiguration.source_channel_all == True:
+        if message.channel.id in relayconfiguration.source_channel.all() or relayconfiguration.source_channel_all == True:
             logger.debug("Matched Channel {}".format(message.channel.id))
 
             # Its important to collate the whole message here or we miss embeds and attachments
@@ -67,41 +73,53 @@ async def on_message(message):
 
             joined_content_with_headers = f"{message.channel.guild.name}/{message.channel.name}/{message.author}: {joined_content}"
 
-            #finally lets run our regex over the entire joined message plus headers in case people want to be fancy
+            #finally lets run our regex over the entire joined message plus headers in case people want to be fancy, most people will use the Mention bools tho
 
-            if message.mention_everyone == relayconfiguration.message_mention or message.mention_everyone == relayconfiguration.message_non_mention or re.search(relayconfiguration.message_regex, joined_content_with_headers):
+            if message.mention_everyone == relayconfiguration.message_mention or message.mention_everyone != relayconfiguration.message_non_mention or re.search(relayconfiguration.message_regex.string, joined_content_with_headers) is not None:
                 logger.debug("Matched MentionConfig or Regex")
 
-                if relayconfiguration.destination_db == True: # Are we logging to DB?
+                if relayconfiguration.attempt_translation == True:
+                    try:
+                        joined_content_translated = f"Translated Content:\n```{translator.translate(message.content).text}```"
+                    except Exception as e:
+                        logger.error(e)
+                else:
+                    joined_content_translated = f""
+
+                if relayconfiguration.destination_db == True:
                     logger.debug("DB Logging Message")
                     try:
-                        Messages.objects.create(message=message.id, content=joined_content,channel_id=message.channel.id)
+                        Messages.objects.create(message=message.id, content=joined_content,channel_id=message.channel.id, author=message.author.id, author_nick=message.author.nick)
                     except Exception as e:
                         logger.error(e)
 
-                if relayconfiguration.destination_webhook != None: # Are we sending to a webhook?
+                if relayconfiguration.destination_webhook.all() != None:
                     logger.debug("Sending Message as a Webhook")
                     try:
                         msg = f"EVE Time: {now()}\n" \
                             f"From: **{message.channel.guild.name}**/{message.author}\n" \
                             f"Channel: {message.channel}\n" \
-                            f"Content:\n{joined_content}"
-                        requests.post(relayconfiguration.destination_webhook.webhook, json={"content": msg})
+                            f"Content:\n{joined_content}\n" \
+                            f"{joined_content_translated}"
+                        for webhookdesto in relayconfiguration.destination_webhook.all():
+                            requests.post(webhookdesto.webhook, json={"content": msg})
                     except Exception as e:
                         logger.error(e)
                 
-                if relayconfiguration.destination_aadiscordbot != None and aadiscordbot_active(): # AA Discord Bot queue it framework
+                if relayconfiguration.destination_aadiscordbot.all() != None and aadiscordbot_active(): # AA Discord Bot queue it framework
                     logger.debug("Sending Message to AADiscordBot")
                     try:
-                        if relayconfiguration.destination_aadiscordbot.destination_type == 'DM'
-                            aadiscordbot.tasks.send_direct_message(relayconfiguration.destination_aadiscordbot.destination, joined_content)
-                        elif relayconfiguration.destination_aadiscordbot.destination_type == 'CM'
-                            aadiscordbot.tasks.send_channel_message(relayconfiguration.destination_aadiscordbot.destination, joined_content))
-                        else:
+                        for aadiscordbotdesto in relayconfiguration.destination_aadiscordbot.all():
+                            if aadiscordbotdesto.destination_type == 'DM':
+                                aadiscordbot.tasks.send_direct_message(aadiscordbotdesto.destination, joined_content)
+                            elif aadiscordbotdesto.destination_type == 'CM':
+                                aadiscordbot.tasks.send_channel_message(aadiscordbotdesto.destination, joined_content)
+                            else:
+                                pass
 
                     except Exception as e:
                         logger.error(e)
-                else:
-                    logger.debug("Did not act on message")
+            else:
+                logger.debug("Did not act on message")
 
-client.run(relayconfiguration.token, bot=False)
+client.run(relayconfiguration.token.token, bot=False)

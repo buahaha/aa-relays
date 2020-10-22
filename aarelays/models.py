@@ -54,7 +54,7 @@ class Channels(models.Model):
     name = models.CharField(max_length=100)
 
     def __str__(self):
-        return '"{}" On "{}"'.format(self.name, self.server.server_name)
+        return '"{}" On "{}"'.format(self.name, self.server.name)
 
     class Meta:
         verbose_name = 'Channel'
@@ -68,7 +68,8 @@ class Messages(models.Model):
     message = models.PositiveBigIntegerField(primary_key=True)
     content = models.CharField(max_length=1000)
     datetime = models.DateTimeField(auto_now=False, auto_now_add=True)
-    author = models.CharField(max_length=50)
+    author = models.PositiveBigIntegerField()
+    author_nick = models.CharField(max_length=50, blank=True, null=True)
 
     def __str__(self):
         return '"{}"'.format(self.message)
@@ -110,17 +111,19 @@ class RelayConfigurations(models.Model):
     name = models.CharField(max_length=50)
     token = models.OneToOneField(AccessTokens,on_delete=models.CASCADE)
 
+    attempt_translation = models.BooleanField(default=False)
+
     message_mention = models.BooleanField(default=True)
     message_non_mention = models.BooleanField(default=False)
     message_regex = models.CharField(max_length=10, default=".^", blank=False, null=False)
 
-    source_server = models.ForeignKey(Servers, on_delete=models.CASCADE)
+    source_server = models.ManyToManyField(Servers)
     source_server_all = models.BooleanField(default=False)
-    source_channel = models.ForeignKey(Channels, on_delete=models.CASCADE)
+    source_channel = models.ManyToManyField(Channels)
     source_channel_all = models.BooleanField(default=False)
 
-    destination_webhook = models.ForeignKey(DestinationWebhooks, on_delete=models.CASCADE)
-    destination_aadiscordbot = models.ForeignKey(DestinationAADiscordBot, on_delete=models.CASCADE)
+    destination_webhook = models.ManyToManyField(DestinationWebhooks, blank=True)
+    destination_aadiscordbot = models.ManyToManyField(DestinationAADiscordBot, blank=True)
     destination_db = models.BooleanField(default=False)
 
     def __str__(self):

@@ -70,7 +70,7 @@ class DestinationAADiscordBot(admin.ModelAdmin):
 
 @admin.register(RelayConfigurations)
 class RelayConfigurations(admin.ModelAdmin):
-    list_display = ('name','source_channel_name','destination_webhook_name','destination_aadiscordbot')
+    list_display = ('name',)
     ordering = ('name',)
 
     search_fields = ('name',)
