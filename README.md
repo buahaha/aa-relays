@@ -44,7 +44,7 @@ pip install aa-relays
 
  ```python
 ## Settings for AA-Relays ##
-AARELAYS_SETTING_ONE = False
+AARELAYS_TRANSLATION_LANGUAGE = en #https://py-googletrans.readthedocs.io/en/latest/#googletrans-languages
 ```
 
 ### Step Three - Update Project
@@ -56,7 +56,7 @@ AARELAYS_SETTING_ONE = False
 
 Name | Description | Default
 -- | -- | --
-AARELAYS_SETTING_ONE | Does Nothing Currently | False
+AARELAYS_TRANSLATION_LANGUAGE | When attempting a relay translation, what language do I translate to | "en"
 
 ## Permissions
 
@@ -74,7 +74,7 @@ Source Server Matches OR All Servers True/False
 AND
 Source Channel matches OR All Channels True/False
 AND
-@here/@everyone True/False OR All Messages True/False OR Regex (Default "" To not match, further below)
+@here/@everyone True/False OR Non Mentions True/False OR Regex (Default ".^" To not match anything, further below)
 ```
 
 ## Regex
