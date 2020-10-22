@@ -20,7 +20,6 @@ args = parser.parse_args()
 
 import logging
 logger = logging.getLogger(__name__)
-logging.basicConfig(level="DEBUG")
 
 from googletrans import Translator
 translator = Translator()
@@ -78,6 +77,11 @@ async def on_message(message):
             if message.mention_everyone == relayconfiguration.message_mention or message.mention_everyone != relayconfiguration.message_non_mention or re.search(relayconfiguration.message_regex.string, joined_content_with_headers) is not None:
                 logger.debug("Matched MentionConfig or Regex")
 
+                try:
+                    nickname_excepted = message.author.nick
+                except:
+                    nickname_excepted = ""
+
                 if relayconfiguration.attempt_translation == True:
                     try:
                         joined_content_translated = f"Translated Content:\n```{translator.translate(message.content).text}```"
@@ -97,9 +101,9 @@ async def on_message(message):
                     logger.debug("Sending Message as a Webhook")
                     try:
                         msg = f"EVE Time: {now()}\n" \
-                            f"From: **{message.channel.guild.name}**/{message.author}\n" \
+                            f"From: **{message.channel.guild.name}**/{message.author} aka {nickname_excepted}\n" \
                             f"Channel: {message.channel}\n" \
-                            f"Content:\n{joined_content}\n" \
+                            f"Content:\n{joined_content}" \
                             f"{joined_content_translated}"
                         for webhookdesto in relayconfiguration.destination_webhook.all():
                             requests.post(webhookdesto.webhook, json={"content": msg})
