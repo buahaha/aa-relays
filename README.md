@@ -24,8 +24,8 @@ This is an Alliance Auth App for forwarding, collating and filtering of messages
 
 ## Planned Features
 
- - Slack Source
- - Web UI for Viewing Messages
+- Slack Source
+- Web UI for Viewing Messages
 
 ## Installation
 
@@ -36,6 +36,10 @@ Install the app with your venv active
 ```bash
 pip install aa-relays
 ```
+
+Pull the Runners
+
+`wget https://gitlab.com/soratidus999/aa-relays/-/raw/master/aarelays/runner_discord.py`
 
 ### Step Two - Configure
 
@@ -52,6 +56,29 @@ AARELAYS_TRANSLATION_LANGUAGE = en #https://py-googletrans.readthedocs.io/en/lat
 - Run migrations `python manage.py migrate`
 - Gather your staticfiles `python manage.py collectstatic`
 
+### Step Four - Run Relays
+
+The "Runners" need to be ran on your server separately for this to function. While they have the context of Django and Alliance Auth, they require their own process to operate.
+
+Supervisor is one option, which you should have for allianceauth already
+
+```python
+[program:runner_1]
+command=python discord_runner.py 1
+directory=/home/allianceserver/myauth/
+user=allianceserver
+stdout_logfile=/home/allianceserver/myauth/log/aarelays.log
+stderr_logfile=/home/allianceserver/myauth/aarelays.log
+autostart=true
+autorestart=true
+startsecs=10
+priority=900
+
+[group:aarelays]
+programs=runner_1
+priority=900
+```
+
 ## Settings
 
 Name | Description | Default
@@ -64,12 +91,11 @@ Name | Purpose | Code
 -- | -- | --
 Can Access This App  | Allow users to submit Access Tokens from the Front-End | `relays.basic_access`
 
-
 ## Logic
 
 Messages are Relayed for a token based on the following logic order
 
-```
+```pseudo
 Source Server Matches OR All Servers True/False
 AND
 Source Channel matches OR All Channels True/False
@@ -79,7 +105,7 @@ AND
 
 ## Regex
 
-Sometimes distinguishing between Mentions and Chatter isn't enough. 
+Sometimes distinguishing between Mentions and Chatter isn't enough.
 
 Theoretically the full regex library is supported here, but minimal testing has been done, ymmv.
 
@@ -88,7 +114,8 @@ AA Relays Adds header fields into the message string so these cam be regex-ed up
 `joined_content_with_headers = f"{message.channel.guild.name}/{message.channel.name}/{message.author}: {joined_content}"`
 
 Examples
-```
+
+```psuedo
 *supers*
 *red pen*
 
