@@ -109,7 +109,7 @@ class DestinationAADiscordBot(models.Model):
 class RelayConfigurations(models.Model):
     """In and Out...... Repeat"""
     name = models.CharField(max_length=50)
-    token = models.OneToOneField(AccessTokens,on_delete=models.CASCADE)
+    token = models.ForeignKey(AccessTokens,on_delete=models.CASCADE)
 
     attempt_translation = models.BooleanField(default=False)
 
