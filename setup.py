@@ -42,8 +42,8 @@ setup(
     ],
     python_requires='~=3.6',
     install_requires=[
-        "allianceauth>=2.8.0"
-        "googletrans==3.0.0"
+        "allianceauth>=2.8.0",
+        "googletrans==3.0.0",
     ],
 
 )

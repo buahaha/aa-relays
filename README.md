@@ -48,7 +48,7 @@ Pull the Runners
 
  ```python
 ## Settings for AA-Relays ##
-AARELAYS_TRANSLATION_LANGUAGE = en #https://py-googletrans.readthedocs.io/en/latest/#googletrans-languages
+AARELAYS_TRANSLATION_LANGUAGE = "en" #https://py-googletrans.readthedocs.io/en/latest/#googletrans-languages
 ```
 
 ### Step Three - Update Project
@@ -64,11 +64,11 @@ Supervisor is one option, which you should have for allianceauth already
 
 ```python
 [program:runner_1]
-command=python discord_runner.py 1
+command=python runner_discord.py 1
 directory=/home/allianceserver/myauth/
 user=allianceserver
 stdout_logfile=/home/allianceserver/myauth/log/aarelays.log
-stderr_logfile=/home/allianceserver/myauth/aarelays.log
+stderr_logfile=/home/allianceserver/myauth/log/aarelays.log
 autostart=true
 autorestart=true
 startsecs=10

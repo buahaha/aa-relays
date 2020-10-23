@@ -1,4 +1,6 @@
 from django.conf import settings
+from .utils import clean_setting
+
 
 def aadiscordbot_active():
     return 'aa-discordbot' in settings.INSTALLED_APPS
