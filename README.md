@@ -58,9 +58,9 @@ AARELAYS_TRANSLATION_LANGUAGE = "en" #https://py-googletrans.readthedocs.io/en/l
 
 ### Step Four - Run Relays
 
-The "Runners" need to be ran on your server separately for this to function. While they have the context of Django and Alliance Auth, they require their own process to operate.
+The "Runners" need to be ran on your server separately for this to function. While they have the context of Django and Alliance Auth, Each "Relay" own runner process to operate.
 
-Supervisor is one option, which you should have for allianceauth already
+Supervisor is one option, which you should have for allianceauth already, this is a sample configuration for starting a runner for discord for the first AccessToken in the database.
 
 ```python
 [program:runner_1]
@@ -93,7 +93,7 @@ Can Access This App  | Allow users to submit Access Tokens from the Front-End | 
 
 ## Logic
 
-Messages are Relayed for a token based on the following logic order
+For Each Token, looping through each Relay Configuration, Messages are Relayed based on the following logic order
 
 ```pseudo
 Source Server Matches OR All Servers True/False
