@@ -62,9 +62,9 @@ async def on_message(message):
 
     for relayconfiguration in relayconfigurations:
         logger.debug("Message Event Received")
-        if message.channel.guild.id in relayconfiguration.source_server.all() or relayconfiguration.source_server_all == True:
+        if relayconfiguration.source_server.filter(server=message.channel.guild.id) or relayconfiguration.source_server_all == True:
             logger.debug("Matched Server {}".format(message.channel.guild.id))
-            if message.channel.id in relayconfiguration.source_channel.all() or relayconfiguration.source_channel_all == True:
+            if relayconfiguration.source_channel.filter(channel=message.channel.id) or relayconfiguration.source_channel_all == True:
                 logger.debug("Matched Channel {}".format(message.channel.id))
 
                 # Its important to collate the whole message here or we miss embeds and attachments
@@ -93,7 +93,7 @@ async def on_message(message):
                         except Exception as e:
                             logger.error(e)
                     else:
-                        joined_content_translated = f""
+                        joined_content_translated = ""
 
                     if relayconfiguration.destination_db == True:
                         logger.debug("DB Logging Message")
