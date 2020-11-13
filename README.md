@@ -39,7 +39,9 @@ pip install aa-relays
 
 Pull the Runners
 
-`wget https://gitlab.com/soratidus999/aa-relays/-/raw/master/aarelays/runner_discord.py`
+```bash
+wget https://gitlab.com/soratidus999/aa-relays/-/raw/master/aarelays/runner_discord.py
+```
 
 ### Step Two - Configure
 
@@ -62,9 +64,10 @@ The "Runners" need to be ran on your server separately for this to function. Whi
 
 Supervisor is one option, which you should have for allianceauth already, this is a sample configuration for starting a runner for discord for the first AccessToken in the database.
 
+`/etc/supervisor.d/aarelays.conf`
 ```python
 [program:runner_1]
-command=python runner_discord.py 1
+command=/home/allianceserver/venv/auth/bin/python runner_discord.py 1
 directory=/home/allianceserver/myauth/
 user=allianceserver
 stdout_logfile=/home/allianceserver/myauth/log/aarelays.log
