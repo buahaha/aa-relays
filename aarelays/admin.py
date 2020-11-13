@@ -75,6 +75,8 @@ class RelayConfigurations(admin.ModelAdmin):
 
     search_fields = ('name',)
 
+    filter_horizontal = ['source_server','source_channel','destination_webhook','destination_aadiscordbot']
+
 
     @staticmethod
     def server_name(obj):
