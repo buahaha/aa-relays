@@ -2,15 +2,17 @@ from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+
 class Relays(models.Model):
     """Meta model for app permissions"""
 
     class Meta:
-        managed = False                         
+        managed = False
         default_permissions = ()
-        permissions = ( 
-            ('basic_access', 'Can access this app'), 
+        permissions = (
+            ('basic_access', 'Can access this app'),
         )
+
 
 class Servers(models.Model):
     """Servers and their ID"""
@@ -22,7 +24,8 @@ class Servers(models.Model):
 
     server = models.PositiveBigIntegerField(primary_key=True)
     name = models.CharField(max_length=100)
-    protocol = models.CharField(max_length=10, default="Discord", choices=Protocol_Choice.choices)
+    protocol = models.CharField(max_length=10, default="Discord",
+                                choices=Protocol_Choice.choices)
 
     class Meta:
         verbose_name = 'Server'
@@ -31,12 +34,16 @@ class Servers(models.Model):
     def __str__(self):
         return '{}'.format(self.name)
 
+
 class AccessTokens(models.Model):
     """Access Token"""
 
     token = models.CharField(max_length=256)
     servers = models.ManyToManyField(Servers, blank=True)
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, blank=True, null=True)
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL,
+                              on_delete=models.SET_NULL, blank=True, null=True)
+
+    appear_offline = models.BooleanField(default=False)
 
     def __str__(self):
         return '"{}"'.format(self.token)
@@ -60,6 +67,7 @@ class Channels(models.Model):
         verbose_name = 'Channel'
         verbose_name_plural = 'Channels'
 
+
 class Messages(models.Model):
     """Message Storage"""
 
@@ -78,6 +86,7 @@ class Messages(models.Model):
         verbose_name = 'Message'
         verbose_name_plural = 'Messages'
 
+
 class DestinationWebhooks(models.Model):
     """Destinations for Relays"""
     webhook = models.CharField(max_length=200)
@@ -90,13 +99,17 @@ class DestinationWebhooks(models.Model):
         verbose_name = 'Destination Webhook'
         verbose_name_plural = 'Destination Webhooks'
 
+
 class DestinationAADiscordBot(models.Model):
-    """Destinaton Channels to be passed to AA-Discord Bot DON'T set this to hostile channels you potato"""
+    """Destinaton Channels to be passed to AA-Discord
+    Bot DON'T set this to hostile channels you potato"""
     class Message_Type(models.TextChoices):
         CHANNEL_MESSAGE = 'CM', _('Channel Message')
         DIRECT_MESSAGE = 'DM', _('Direct Message')
 
-    destination_type = models.CharField(max_length=2, choices=Message_Type.choices, default=Message_Type.CHANNEL_MESSAGE)
+    destination_type = models.CharField(max_length=2,
+                                        choices=Message_Type.choices,
+                                        default=Message_Type.CHANNEL_MESSAGE)
     destination = models.ForeignKey(Channels, on_delete=models.CASCADE)
 
     def __str__(self):
@@ -105,25 +118,29 @@ class DestinationAADiscordBot(models.Model):
     class Meta:
         verbose_name = 'Discord Channel Destination'
         verbose_name_plural = 'Discord Channel Destinations'
-    
+
+
 class RelayConfigurations(models.Model):
     """In and Out...... Repeat"""
     name = models.CharField(max_length=50)
-    token = models.ForeignKey(AccessTokens,on_delete=models.CASCADE)
+    token = models.ForeignKey(AccessTokens, on_delete=models.CASCADE)
 
     attempt_translation = models.BooleanField(default=False)
 
     message_mention = models.BooleanField(default=True)
     message_non_mention = models.BooleanField(default=False)
-    message_regex = models.CharField(max_length=10, default=".^", blank=False, null=False)
+    message_regex = models.CharField(max_length=10, default=".^", blank=False,
+                                     null=False)
 
     source_server = models.ManyToManyField(Servers)
     source_server_all = models.BooleanField(default=False)
     source_channel = models.ManyToManyField(Channels)
     source_channel_all = models.BooleanField(default=False)
 
-    destination_webhook = models.ManyToManyField(DestinationWebhooks, blank=True)
-    destination_aadiscordbot = models.ManyToManyField(DestinationAADiscordBot, blank=True)
+    destination_webhook = models.ManyToManyField(DestinationWebhooks,
+                                                 blank=True)
+    destination_aadiscordbot = models.ManyToManyField(DestinationAADiscordBot,
+                                                      blank=True)
     destination_db = models.BooleanField(default=False)
 
     def __str__(self):
