@@ -135,10 +135,10 @@ async def on_message(message):
                         try:
                             for aadiscordbotdesto in relayconfiguration.destination_aadiscordbot.all():
                                 if aadiscordbotdesto.destination_type == 'DM':
-                                    aadiscordbot.tasks.send_direct_message(aadiscordbotdesto.destination,
+                                    aadiscordbot.tasks.send_direct_message_by_discord_id.delay(aadiscordbotdesto.destination.channel,
                                                                             joined_content)
                                 elif aadiscordbotdesto.destination_type == 'CM':
-                                    aadiscordbot.tasks.send_channel_message(aadiscordbotdesto.destination,
+                                    aadiscordbot.tasks.send_channel_message_by_discord_id.delay(aadiscordbotdesto.destination.channel,
                                                                             joined_content)
                                 else:
                                     pass
